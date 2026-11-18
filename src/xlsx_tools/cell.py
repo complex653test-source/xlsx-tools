@@ -18,8 +18,12 @@ class XlsxCell:
     raw:Cell
 
     @property
-    def col_idx(self)->int:
+    def column_index(self)->int:
         return self.raw.col_idx
+
+    @property
+    def column_letter(self)->str:
+        return self.raw.column_letter
 
     @property
     def is_blank(self)->bool:
@@ -34,7 +38,8 @@ class XlsxCell:
     def is_none(self)->bool:
         return self.value is None
     
-    def bool(self, default=INVALID, strict=False)->bool:
+    def bool(self, default=INVALID, strict=False, transform:Callable=INVALID)->bool:
+        value=self.clean_value(default=default, transform=transform))
         if isinstance(self.value, bool):
             return self.value
         if strict:
@@ -49,13 +54,15 @@ class XlsxCell:
         breakpoint()
         assert False
 
-    def datetime(self, default=INVALID, strict=True)->datetime:
+    def datetime(self, default=INVALID, strict=True, transform:Callable=INVALID)->datetime:
+        value=self.clean_value(default=default, transform=transform))
         if isinstance(self.value, datetime):
             return self.value
         assert False
 
 
-    def float(self, default=INVALID, strict=True)->float:
+    def float(self, default=INVALID, strict=True, transform:Callable=INVALID)->float:
+        value=self.clean_value(default=default, transform=transform))
         if isinstance(self.value, float):
             return self.value
         if strict:
@@ -67,19 +74,22 @@ class XlsxCell:
             return default
         return float(self.value)
 
-    def int(self, default=INVALID, strict=True, transform:Callable)->int:
-        if isinstance(self.value, int):
-            return self.value
+    def int(self, default=INVALID, strict=True, transform:Callable=INVALID)->int:
+        value=self.clean_value(default=default, transform=transform)
+
+        if isinstance(ret_val, int):
+            return ret_val
         if strict:
-            logging.error(f"Encountered value '{self.value}' is not an integer ({type(self.value)})")
-            raise ValueError(f"Encountered value '{self.value}' is not an integer ({type(self.value)})")
-        if self.value is None:
+            from xlsx_tools.utils import ChainAssert
+            ChainAssert(value=ret_val, name="ret_val").isinstance(int)
+        if ret_val is None:
             if default == INVALID:
                 return 0
             return default
-        return int(self.value)
+        return int(ret_val)
 
-    def str(self, default=INVALID, strict=True)->str:
+    def str(self, default=INVALID, strict=True, transform:Callable=INVALID)->str:
+        value=self.clean_value(default=default, transform=transform))
         if isinstance(self.value, str):
             return self.value
         if strict:
@@ -95,5 +105,15 @@ class XlsxCell:
     @property
     def value(self):
         return self.raw.value
+
+
+    def clean_value(self, default:any=INVALID, transform:Callable=INVALID)->any:
+        ret_val = self.value
+        if transform is not INVALID:
+            return transform(cell=self, default=default)
+
+        if ret_val is None:
+            return default
+
 
 
