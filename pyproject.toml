@@ -10,6 +10,7 @@ requires-python = ">=3.14"
 dependencies = [
     "isort>=9.0.2",
     "openpyxl>=3.1.5",
+    "pytest>=9.2.0",
 ]
 
 [project.scripts]

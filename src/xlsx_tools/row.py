@@ -5,40 +5,29 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict
-
 from openpyxl.cell.cell import Cell
-
 from xlsx_tools.utils import INVALID, col_to_int
 from xlsx_tools.dict_tools import DictParser
-
 from xlsx_tools.cell import XlsxCell
-
 from xlsx_tools.utils import ChainAssert
+from typing import Tuple, List
 
-
-from typing import Tuple
     
 @dataclass(frozen=True)
 class XlsxRow:
     row_number:int
     user_data:Dict
-    cells:Tuple[XlsxCell] # tuple of XlsxCell values
+    xlsx_cells:List[XlsxCell]
+    # cells:Tuple[XlsxCell] # tuple of XlsxCell values
 
 
     def __post_init__(self):
-        for i in self.cells:
-            print(type(i))
-            assert isinstance(i, XlsxCell)
-            # ChainAssert(value=i, name="").isinstance(XlsxCell)
+
+        object.__setattr__(self, "xlsx_cells", [XlsxCell(raw=cell) for cell in self.xlsx_cells])
+
 
     def __len__(self)->int:
         return len(self.cells)
-
-    # def xlsx_cells(self)->list[XlsxCell]:
-    #     for i in self.cells:
-    #         assert isinstance(i, XlsxCell)
-    #     # for n, i in 
-    #     return self.cells
         
     def get_raw(self, col:str|int)->XlsxCell:
         if isinstance(col, int):

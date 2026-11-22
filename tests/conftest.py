@@ -10,7 +10,13 @@ from openpyxl import Workbook
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "test.xlsx"
+TEST1_FIXTURE = ROOT / "tests/res/test1.xlsx"
 
+
+@pytest.fixture(scope="session")
+def test1_xlsx_path() -> Path:
+    assert TEST1_FIXTURE.exists(), f"missing fixture {TEST1_FIXTURE}"
+    return TEST1_FIXTURE
 
 @pytest.fixture(scope="session")
 def fixture_path() -> Path:

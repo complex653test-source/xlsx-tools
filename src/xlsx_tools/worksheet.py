@@ -1,47 +1,36 @@
 import itertools
 from dataclasses import dataclass
-
 from openpyxl import worksheet
-
+import re
 from xlsx_tools.parsed_row import ParsedRow, RowParser, EmptyRow, Categorization
 from xlsx_tools.row import XlsxRow
 from typing import List
-
-
 from xlsx_tools.utils import ChainAssert
 from xlsx_tools.cell import XlsxCell
-
 from xlsx_tools.parsed_row import ErrorRow
+
 @dataclass(frozen=True)
 class XlsxWorksheet:
     sheet:worksheet
+    xlsx_rows:List[XlsxRow]|None=None
 
-    def row(self, row_number)->XlsxRow:
+    def __post_init__(self):
+        xlsx_rows=[XlsxRow(row_number=row_number, user_data={}, xlsx_cells=cells) for row_number, cells in enumerate(self.sheet.rows)]
+        object.__setattr__(self, 'xlsx_rows', xlsx_rows)
 
-        # gen = (x * 10 for x in range(100))
+    def get_cell(self, a1_cell:str)->XlsxCell:
+        row_index, col_index = _parse_a1(a1_cell, zero_indexed = True)
+        # print(row_index, col_index)
+        return self.xlsx_rows[row_index].xlsx_cells[col_index]
 
-        # Skip the first 5 items and land on index 5 (which yields 50)
-        return itertools.islice(self.rows, row_number, 1)
 
-        # cells=list(self.sheet.rows)[row_number]
-        # return XlsxRow(row_number=row_number, cells=cells, user_data={})
 
-    # @property
-    # def raw_rows(self):
-    #     for n, raw_row in enumerate(self.sheet.rows):
-    #         yield XlsxRow(row_number=n, user_data={}, cells=[XlsxCell(cell) for cell in raw_row])
 
-    @property
-    def xlsx_rows(self):
-        for n, raw_row in enumerate(self.sheet.rows):
-            yield XlsxRow(row_number=n, user_data={}, cells=[XlsxCell(cell) for cell in raw_row])
 
 
 @dataclass(frozen=True)
 class ParsedWorksheet:
     parsed_rows:List[ParsedRow]
-
-
 
 
 @dataclass(frozen=True)
@@ -95,25 +84,38 @@ class WorksheetParser:
         for xlsx_row in worksheet.xlsx_rows:
             ChainAssert(xlsx_row).isinstance( XlsxRow)
             parsed_rows.append(self.parse_row(xlsx_row=xlsx_row, user_data=user_data))
-            # for parser in self.row_parsers:
-            #     category_value = parser.categorize(xlsx_row=xlsx_row, user_data=user_data)
-            #     #type_check(value, float, var_name:str)
-            #     ChainChecker(value=category_value, name="category_value").isinstance(float).compare(le=1.0, ge=0.0)
-            #     # if not isinstance(:
-            #     #     raise TypeError(f"category value must be a float: {type(value)} {value}")
-            #     # if value > 1.0:
-            #     #     raise ValueError(f"category value must be <= 1.0: {value}")
-            #     # if value < 0.0:
-            #     #     raise ValueError(f"category value must be >= 0.0: {value}")
 
-            #     # assert value >= 0.0
-            #     cats[parser]=category_value
-            # values = list(cats.items())
-            # max_cat = max(values)
-            # if max_cat==0.0:
-            #     parsed_row=ErrorRow(tow=row, user_data=user_data, errors="No parser found")
-
-            # assert values.count(max_cat) == 1
-            # parser = max(list(cats.items()))
-            # breakpoint()
         return ParsedWorksheet(parsed_rows=parsed_rows)
+
+def _parse_a1(cell: str, zero_indexed: bool = True) -> tuple[int, int]:
+    """
+    Parses an A1-style cell reference into (row, column) integer indexes.
+    
+    Args:
+        cell: A string like "A1", "BC42", or "$D$10".
+        zero_indexed: If True, "A1" returns (0, 0). If False, "A1" returns (1, 1).
+        
+    Returns:
+        A tuple of (row, col) as integers.
+    """
+    # Remove '$' for absolute references and standardize to uppercase
+    clean_cell = cell.replace("$", "").strip().upper()
+    
+    # Match the column letters and row digits
+    match = re.match(r"^([A-Z]+)([1-9][0-9]*)$", clean_cell)
+    if not match:
+        raise ValueError(f"Invalid A1 cell reference: '{cell}'")
+    
+    col_str, row_str = match.groups()
+    
+    # Convert row string to integer
+    row = int(row_str)
+    
+    # Convert column letters (base-26) to integer
+    col = 0
+    for char in col_str:
+        col = col * 26 + (ord(char) - ord('A') + 1)
+        
+    if zero_indexed:
+        return row - 1, col - 1
+    return row, col
