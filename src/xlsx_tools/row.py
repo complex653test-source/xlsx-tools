@@ -5,14 +5,18 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict
-from openpyxl.cell.cell import Cell
-from xlsx_tools.utils import INVALID, col_to_int
-from xlsx_tools.dict_tools import DictParser
-from xlsx_tools.cell import XlsxCell
-from xlsx_tools.utils import ChainAssert
-from typing import Tuple, List
+from typing import List
+from typing import Tuple
 
-    
+from openpyxl.cell.cell import Cell
+
+from xlsx_tools.cell import XlsxCell
+from xlsx_tools.dict_tools import DictParser
+from xlsx_tools.utils import INVALID
+from xlsx_tools.utils import ChainAssert
+from xlsx_tools.utils import col_to_int
+
+
 @dataclass(frozen=True)
 class XlsxRow:
     row_number:int

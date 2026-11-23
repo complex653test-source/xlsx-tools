@@ -5,6 +5,7 @@ class INVALID:
 
 from dataclasses import dataclass
 from typing import Callable
+
 #(Pdb) isinstance(datatype, Callable)
 True
 

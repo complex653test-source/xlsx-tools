@@ -1,13 +1,19 @@
 import itertools
-from dataclasses import dataclass
-from openpyxl import worksheet
 import re
-from xlsx_tools.parsed_row import ParsedRow, RowParser, EmptyRow, Categorization
-from xlsx_tools.row import XlsxRow
+from dataclasses import dataclass
 from typing import List
-from xlsx_tools.utils import ChainAssert
+
+from openpyxl import worksheet
+
 from xlsx_tools.cell import XlsxCell
+from xlsx_tools.parsed_row import Categorization
+from xlsx_tools.parsed_row import EmptyRow
 from xlsx_tools.parsed_row import ErrorRow
+from xlsx_tools.parsed_row import ParsedRow
+from xlsx_tools.parsed_row import RowParser
+from xlsx_tools.row import XlsxRow
+from xlsx_tools.utils import ChainAssert
+
 
 @dataclass(frozen=True)
 class XlsxWorksheet:

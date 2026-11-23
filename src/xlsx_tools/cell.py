@@ -4,11 +4,13 @@ from abc import ABC
 from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Callable
 from typing import Dict
 from typing import Type
+
 from openpyxl.cell.cell import Cell
+
 from xlsx_tools.utils import INVALID
-from typing import Callable
 
 
 @dataclass(frozen=True)

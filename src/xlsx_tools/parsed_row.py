@@ -9,12 +9,10 @@ from typing import Dict
 from openpyxl.cell.cell import Cell
 
 from xlsx_tools.cell import XlsxCell
-from xlsx_tools.row import XlsxRow
-from xlsx_tools.utils import INVALID, ChainAssert
 from xlsx_tools.dict_tools import DictParser
-
-
-
+from xlsx_tools.row import XlsxRow
+from xlsx_tools.utils import INVALID
+from xlsx_tools.utils import ChainAssert
 
 
 @dataclass(frozen=True)
